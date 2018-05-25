@@ -1,90 +1,98 @@
 <!doctype html>
 <html>
-  <head>
-    <title>Socket.IO chat</title>
-    <style>
-      * { margin: 0; padding: 0; box-sizing: border-box; }
-      body { font: 13px Helvetica, Arial; }
-      
-      #messagesList { list-style-type: none; margin: 0; padding: 0; }
-      #messagesList li { padding: 5px 10px; }
-      #messagesList li:nth-child(odd) { background: #eee; }
+<head>
+  <title>Socket.IO chat</title>
+  <style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font: 13px Helvetica, Arial; }
 
-      #myFormChatWrapper { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
-      #myFormChat input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
-      #myFormChat button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
+  #messagesList { list-style-type: none; margin: 0; padding: 0; }
+  #messagesList li { padding: 5px 10px; }
+  #messagesList li:nth-child(odd) { background: #eee; }
 
-      #myFormEditWrapper { background: yellow; border: 10px solid black; padding: 3px; width: 100%; margin: 0 auto; }
-      textarea { box-sizing: border-box; width: 100%; }
+  #myFormChatWrapper { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
+  #myFormChat input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
+  #myFormChat button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
 
-    </style>
-  </head>
+  #myFormEditWrapper { background: yellow; border: 10px solid black; padding: 3px; width: 100%; margin: 0 auto; }
+  textarea { box-sizing: border-box; width: 100%; }
 
-  <body>
-    <h1>
-      Chat app:
-    </h1>
-    <ul id="messagesList"></ul>
+  </style>
+</head>
 
-    <div id="myFormChatWrapper">
+<body>
+  <p id='server-time'></p>
+
+  <h1>
+    Chat app:
+  </h1>
+  <ul id="messagesList"></ul>
+
+  <div id="myFormChatWrapper">
     <form action="" id="myFormChat">
       <input id="messageChat" autocomplete="off" /><button>Send</button>
     </form>
 
     <div id="myFormEditWrapper">
-    <h1>
-      Edit app:
-    </h1>
-    <form action="" id="myFormEdit">
-      <textarea id="textareaEdit"
+      <h1>
+        Edit app:
+      </h1>
+      <form action="" id="myFormEdit">
+        <textarea id="textareaEdit"
         rows="10"
         placeholder="add text here..."
-      >
+        >
       </textarea>
     </form>
   </div>
-  </div>
+</div>
 
-    <script src="/socket.io/socket.io.js"></script>
-    <script>
+<script src="/socket.io/socket.io.js"></script>
+<script>
 
-      document.addEventListener("DOMContentLoaded", function() {
-        var socket = io();
+document.addEventListener("DOMContentLoaded", function() {
+  var socket = io();
 
-        //chat below
-        var myFormChat = document.getElementById("myFormChat");
-        var message = document.getElementById("messageChat");
-        var messagesList = document.getElementById("messagesList");
+  //clock below
+  var el = document.getElementById('server-time');
+  socket.on('time', function(timeString) {
+    el.innerHTML = 'Server time: ' + timeString;
+  });
 
-        myFormChat.addEventListener("submit", function(event) {
-          event.preventDefault();
-          socket.emit('chat message', message.value);
-          message.value = "";
-          return false;
-        });
+  //chat below
+  var myFormChat = document.getElementById("myFormChat");
+  var message = document.getElementById("messageChat");
+  var messagesList = document.getElementById("messagesList");
 
-        socket.on('chat message', function(chat_msg) {
-          var newLI = document.createElement('li');
-          newLI.appendChild(document.createTextNode(chat_msg));
-          messagesList.appendChild(newLI);
-        });
+  myFormChat.addEventListener("submit", function(event) {
+    event.preventDefault();
+    socket.emit('chat message', message.value);
+    message.value = "";
+    return false;
+  });
 
-        //textarea below
-        var myFormEdit = document.getElementById("myFormEdit");
-        var textareaEdit = document.getElementById("textareaEdit"); //this is the textarea within the form
+  socket.on('chat message', function(chat_msg) {
+    var newLI = document.createElement('li');
+    newLI.appendChild(document.createTextNode(chat_msg));
+    messagesList.appendChild(newLI);
+  });
 
-        myFormEdit.addEventListener("keyup", function(event) {
-          event.preventDefault();
-          socket.emit('textarea update', textareaEdit.value); //below 'chat message' must match what is emitted here, i.e.: 'chat message' (emits sends the message to everyone, including the sender)
-          return false;
-        });
+  //textarea below
+  var myFormEdit = document.getElementById("myFormEdit");
+  var textareaEdit = document.getElementById("textareaEdit"); //this is the textarea within the form
 
-        socket.on('textarea update', function(msg) {
-          textareaEdit.value = msg; //whenever a 'chat message' is emitted, the entire textarea (id=message) will be updated with the entire msg received
-        });
-      });
+  myFormEdit.addEventListener("keyup", function(event) {
+    event.preventDefault();
+    socket.emit('textarea update', textareaEdit.value); //below 'chat message' must match what is emitted here, i.e.: 'chat message' (emits sends the message to everyone, including the sender)
+    return false;
+  });
 
-    </script>
+  socket.on('textarea update', function(msg) {
+    textareaEdit.value = msg; //whenever a 'chat message' is emitted, the entire textarea (id=message) will be updated with the entire msg received
+  });
+});
 
-  </body>
+</script>
+
+</body>
 </html>
