@@ -15,25 +15,47 @@
   </head>
 
   <body>
-    <ul id="messages"></ul>
-    <form action="">
-      <input id="m" autocomplete="off" /><button>Send</button>
+    <ul id="messagesList"></ul>
+    <form action="" id="myForm">
+      <input id="message" autocomplete="off" /><button>Send</button>
     </form>
 
     <script src="/socket.io/socket.io.js"></script>
-    <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+    <!-- <script src="https://code.jquery.com/jquery-1.11.1.js"></script> -->
     <script>
-      $(function () {
+
+    // $(function () {
+    //   var socket = io();
+    //   $('form').submit(function(){
+    //     socket.emit('chat message', $('#m').val());
+    //     $('#m').val('');
+    //     return false;
+    //   });
+    //   socket.on('chat message', function(msg){
+    //     $('#messages').append($('<li>').text(msg));
+    //   });
+    // });
+
+      document.addEventListener("DOMContentLoaded", function() {
         var socket = io();
-        $('form').submit(function(){
-          socket.emit('chat message', $('#m').val());
-          $('#m').val('');
+        var form_element = document.getElementById("myForm");
+        var message = document.getElementById("message");
+        var messagesList = document.getElementById("messagesList");
+
+        form_element.addEventListener("submit", function(event) {
+          event.preventDefault();
+          socket.emit('chat message', message.value);
+          message.value = "";
           return false;
         });
-        socket.on('chat message', function(msg){
-          $('#messages').append($('<li>').text(msg));
+
+        socket.on('chat message', function(msg) {
+          var newLI = document.createElement('li');
+          newLI.appendChild(document.createTextNode(msg));
+          messagesList.appendChild(newLI);
         });
       });
+
     </script>
 
   </body>
